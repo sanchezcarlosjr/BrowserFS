@@ -4,6 +4,7 @@ import { FileContents, FileSystem } from '../filesystem';
 import { Stats } from '../stats';
 import type { symlink, ReadSyncOptions } from 'fs';
 import { normalizePath, cred, getFdForFile, normalizeMode, normalizeOptions, fdMap, fd2file, normalizeTime, resolveFS, fixError, mounts } from './shared';
+import * as path from "path";
 
 type FileSystemMethod = {
 	[K in keyof FileSystem]: FileSystem[K] extends (...args: any) => any
@@ -511,4 +512,23 @@ export function realpathSync(path: string, cache: { [path: string]: string } = {
  */
 export function accessSync(path: string, mode: number = 0o600): void {
 	return doOp('accessSync', true, path, mode, cred);
+
+}
+
+/**
+ * Synchronous `directory walk`.
+ * @param directory
+ * By https://gist.github.com/luciopaiva/4ba78a124704007c702d0293e7ff58dd
+ */
+export function *walkSync(directory: string) {
+	const files = readdirSync(directory);
+	for (const file of files) {
+		const pathToFile = path.join(directory, file);
+		const isDirectory = statSync(pathToFile).isDirectory();
+		if (isDirectory) {
+			yield *walkSync(pathToFile);
+		} else {
+			yield pathToFile;
+		}
+	}
 }

@@ -249,9 +249,7 @@ export class IndexedDBFileSystem extends AsyncKeyValueFileSystem {
 				return false;
 			}
 			const req = indexedDB.open('__browserfs_test__');
-			if (!req) {
-				return false;
-			}
+			return !!req;
 		} catch (e) {
 			return false;
 		}
